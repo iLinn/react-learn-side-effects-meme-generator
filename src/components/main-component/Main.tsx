@@ -27,6 +27,7 @@ export default function Main() {
     bottomText: 'Walk into Mordor',
   }
   const [memeData, setMemeData] = useState<MemeData>(defaultMemeData);
+  const [allMemes, setAllMemes] = useState<MemeApi[]>([]);
   const MEME_URL = 'https://api.imgflip.com/get_memes';
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -35,15 +36,19 @@ export default function Main() {
     setMemeData((prev) => ({ ...prev, [name]: value }));
   }
 
+  function randomizeMeme(): void {
+    const randomIndex = Math.floor(Math.random() * allMemes.length);
+    const randomMeme = allMemes?.[randomIndex] ? allMemes[randomIndex] : 
+      allMemes[0] ? allMemes[0] : { url: defaultMemeData.imageUrl };
+    setMemeData((prev) => ({ ...prev, imageUrl: randomMeme.url }));
+  }
+
   useEffect(() => {
     fetch(MEME_URL)
       .then((response) => response.json())
       .then((data: MemeResponse) => {
         const { memes } = data.data;
-        const randomIndex = Math.floor(Math.random() * memes.length);
-        const randomMeme = memes?.[randomIndex] ? memes[randomIndex] : 
-          memes[0] ? memes[0] : { url: defaultMemeData.imageUrl };
-        setMemeData((prev) => ({ ...prev, imageUrl: randomMeme.url }));
+        setAllMemes(memes);
     }).catch((error) => {
       console.error('Error fetching meme data:', error);
     });
@@ -71,7 +76,7 @@ export default function Main() {
                       value={memeData?.bottomText}
                   />
               </label>
-              <button>Get a new meme image 🖼</button>
+              <button onClick={randomizeMeme}>Get a new meme image 🖼</button>
           </div>
           <div className="meme">
               {memeData?.imageUrl && <img src={memeData?.imageUrl} alt="Meme picture"/>}
